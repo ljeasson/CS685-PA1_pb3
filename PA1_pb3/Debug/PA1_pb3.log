@@ -1,0 +1,7 @@
+﻿  PA1_pb3.cpp
+C:\Users\Lee\source\repos\PA1_pb3\PA1_pb3\PA1_pb3.cpp(20,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Lee\source\repos\PA1_pb3\PA1_pb3\PA1_pb3.cpp(21,12): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Lee\source\repos\PA1_pb3\PA1_pb3\PA1_pb3.cpp(69,17): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\Lee\source\repos\PA1_pb3\PA1_pb3\PA1_pb3.cpp(81,73): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+C:\Users\Lee\source\repos\PA1_pb3\PA1_pb3\PA1_pb3.cpp(90,99): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+C:\Users\Lee\source\repos\PA1_pb3\PA1_pb3\PA1_pb3.cpp(105): error C4700: uninitialized local variable 'output' used
