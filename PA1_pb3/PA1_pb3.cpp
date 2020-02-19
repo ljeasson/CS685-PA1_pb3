@@ -99,14 +99,13 @@ void apply_gaussian_smoothing_2D(int** image, int x_size, int y_size, float** ke
 		}
 	}
 }
-void downsample(int** image, int x_size, int y_size, int** downsampled_image, int new_width, int new_height)
+void downsample(int** image, int x_size, int y_size, int** downsampled_image)
 {
-	for (int i = 0; i < x_size -2; i++)
+	for (int i = 0; i < y_size; i++)
 	{
-		for (int j = 0; j < y_size -2; j++)
+		for (int j = 0; j < x_size; j++)
 		{
-			if (i % 2 == 0 && j % 2 == 0)
-				downsampled_image[i][j] = image[i+2][j+2];
+			downsampled_image[i][j] = image[2*i][2*j];
 		}
 	}
 }
@@ -124,25 +123,88 @@ int main()
 
 	// Read in image
 	int** input, ** output;
-	int x_size_orig, y_size_orig, Q;
+	int x_size, y_size, Q;
 	char name[20] = "lenna.pgm";
 	
-	ReadImage(name, &input, x_size_orig, y_size_orig, Q);
+	// Set step size
+	float k = pow(2.0, (1.0 / S));
 
-	int x_size = x_size_orig;
-	int y_size = y_size_orig;
+	ReadImage(name, &input, x_size, y_size, Q);
+	
 
+	// Process original image (considered level (n) 0)
+	cout << "n: 0 ==========================================================" << endl;
+
+	// Process each intermediate level	
+	for (int s = 1; s <= S; s++)
+	{
+		float new_sigma = pow(k, s) * sigma;
+		int mask_size = 5.0 * new_sigma;
+
+		if (mask_size % 2 == 0)
+			mask_size -= 1;
+
+		//cout << "new_sigma: " << new_sigma << endl << "mask_size: " << mask_size << endl << endl;
+
+
+		// Set output file name
+		char outfile_name[] = "lenna_output_n0_";
+		char outfile_ext[] = ".pgm";
+
+
+		char s_string[32];
+		sprintf(s_string, "s%d_", s);
+
+		char* outfile = new char[strlen(outfile_name) + strlen(s_string) + strlen(outfile_ext) + 1];
+		strcpy(outfile, outfile_name);
+
+		strcat(outfile, s_string);
+
+		strcat(outfile, outfile_ext);
+
+
+		// Generate 2D Gaussian kernel
+		float** Gaussian_Kernel_2D;
+		Gaussian_Kernel_2D = new float* [mask_size];
+		for (int i = 0; i < mask_size; i++)
+			Gaussian_Kernel_2D[i] = new float[mask_size];
+		generate_gaussian_kernel_2D(Gaussian_Kernel_2D, sigma, mask_size);
+
+
+		// Pad image with zeros
+		int** input_padded_2D;
+		input_padded_2D = new int* [y_size + mask_size - 1];
+		for (int i = 0; i < y_size + mask_size - 1; i++)
+			input_padded_2D[i] = new int[x_size + mask_size - 1];
+		padd_with_zeros_2D(input, input_padded_2D, x_size, y_size, mask_size);
+
+
+		// Apply Gaussian smoothing to image
+		int** input_smoothed_2D;
+		input_smoothed_2D = new int* [y_size];
+		for (int i = 0; i < y_size; i++)
+			input_smoothed_2D[i] = new int[x_size];
+		for (int i = 0; i < y_size; i++)
+			for (int j = 0; j < x_size; j++)
+				input_smoothed_2D[i][j] = 0;
+		apply_gaussian_smoothing_2D(input_padded_2D, x_size + mask_size - 1, y_size + mask_size - 1, Gaussian_Kernel_2D, mask_size, input_smoothed_2D);
+
+
+		WriteImage(outfile, input_smoothed_2D, x_size, y_size, Q);
+		cout << name << " saved as " << outfile << endl;
+	}
+	cout << endl;
+
+
+	// Process each level
 	for (int n = 1; n <= N; n++)
 	{
-		// Process each level
 		cout << "n: " << n << " ==========================================================" <<  endl;
 		
-		// Set step size
-		float k = pow(2.0, (1.0 / S));
-	
 		// Downsample image based on current level
 		x_size = x_size / 2;
 		y_size = y_size / 2;
+		//cout << "x_size: " << x_size << endl << "y_size: " << y_size << endl;
 
 		char outfile_name[] = "lenna_output_";
 		char outfile_ext[] = ".pgm";
@@ -160,7 +222,7 @@ int main()
 		input_downsampled = new int* [y_size];
 		for (int i = 0; i < y_size; i++)
 			input_downsampled[i] = new int[x_size];
-		downsample(input, x_size, y_size, input_downsampled, x_size_orig, y_size_orig);
+		downsample(input, x_size, y_size, input_downsampled);
 
 		WriteImage(outfile, input_downsampled, x_size, y_size, Q);
 
@@ -174,7 +236,7 @@ int main()
 			if (mask_size % 2 == 0)
 				mask_size -= 1;
 
-			cout << "new_sigma: " << new_sigma << endl << "mask_size: " << mask_size << endl << endl;
+			//cout << "new_sigma: " << new_sigma << endl << "mask_size: " << mask_size << endl << endl;
 
 
 			// Set output file name
@@ -224,10 +286,11 @@ int main()
 
 
 			WriteImage(outfile, input_smoothed_2D, x_size, y_size, Q);
-			cout << name << " saved as " << outfile << endl << endl;
+			cout << name << " saved as " << outfile << endl;
 
 		}
 		cout << endl;
+		
 	}
 
 	return 0;

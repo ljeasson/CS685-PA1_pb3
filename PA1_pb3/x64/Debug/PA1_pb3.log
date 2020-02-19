@@ -4,7 +4,8 @@ C:\Users\Lee\source\repos\PA1_pb3\PA1_pb3\PA1_pb3.cpp(28,12): warning C4244: '='
 C:\Users\Lee\source\repos\PA1_pb3\PA1_pb3\PA1_pb3.cpp(76,17): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
 C:\Users\Lee\source\repos\PA1_pb3\PA1_pb3\PA1_pb3.cpp(88,73): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
 C:\Users\Lee\source\repos\PA1_pb3\PA1_pb3\PA1_pb3.cpp(97,99): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-C:\Users\Lee\source\repos\PA1_pb3\PA1_pb3\PA1_pb3.cpp(142,11): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\Lee\source\repos\PA1_pb3\PA1_pb3\PA1_pb3.cpp(173,18): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\Lee\source\repos\PA1_pb3\PA1_pb3\PA1_pb3.cpp(127,18): warning C4101: 'output': unreferenced local variable
+C:\Users\Lee\source\repos\PA1_pb3\PA1_pb3\PA1_pb3.cpp(130,10): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Lee\source\repos\PA1_pb3\PA1_pb3\PA1_pb3.cpp(142,17): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\Lee\source\repos\PA1_pb3\PA1_pb3\PA1_pb3.cpp(234,18): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\Lee\source\repos\PA1_pb3\PA1_pb3\PA1_pb3.cpp(125,18): warning C4101: 'output': unreferenced local variable
   PA1_pb3.vcxproj -> C:\Users\Lee\source\repos\PA1_pb3\x64\Debug\PA1_pb3.exe
