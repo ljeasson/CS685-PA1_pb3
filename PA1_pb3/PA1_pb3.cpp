@@ -17,6 +17,7 @@ using namespace std;
 void generate_gaussian_kernel_2D(float** kernel, double sigma, int kernel_size);
 void padd_with_zeros_2D(int** matrix, int** padded_matrix, int width, int height, int filter_size);
 void apply_gaussian_smoothing_2D(int** image, int x_size, int y_size, float** kernel, int kernel_size, int** output_image);
+void downsample(int** image, int x_size, int y_size, int** downsampled_image);
 
 void generate_gaussian_kernel_2D(float** kernel, double sigma, int kernel_size)
 {
@@ -98,29 +99,38 @@ void apply_gaussian_smoothing_2D(int** image, int x_size, int y_size, float** ke
 		}
 	}
 }
-void downsample(int** image, int x_size, int y_size, int** downsampled_image)
+void downsample(int** image, int x_size, int y_size, int** downsampled_image, int new_width, int new_height)
 {
-
+	for (int i = 0; i < x_size -2; i++)
+	{
+		for (int j = 0; j < y_size -2; j++)
+		{
+			if (i % 2 == 0 && j % 2 == 0)
+				downsampled_image[i][j] = image[i+2][j+2];
+		}
+	}
 }
-
 
 
 int main()
 {
 	// Set sigma, number of levels, and number of intermediate levels
 	float sigma = 1.0;
-	cout << "Sigma: " << sigma << endl;
-	float N = 1.0;
+	float N = 3.0;
 	float S = 3.0;
+	cout << "Sigma: " << sigma << endl;
 	cout << "Number of Levels: " << N << endl;
 	cout << "Number of Intermediate Levels: " << S << endl << endl;
 
 	// Read in image
 	int** input, ** output;
-	int x_size, y_size, Q;
+	int x_size_orig, y_size_orig, Q;
 	char name[20] = "lenna.pgm";
 	
-	ReadImage(name, &input, x_size, y_size, Q);
+	ReadImage(name, &input, x_size_orig, y_size_orig, Q);
+
+	int x_size = x_size_orig;
+	int y_size = y_size_orig;
 
 	for (int n = 1; n <= N; n++)
 	{
@@ -129,10 +139,35 @@ int main()
 		
 		// Set step size
 		float k = pow(2.0, (1.0 / S));
+	
+		// Downsample image based on current level
+		x_size = x_size / 2;
+		y_size = y_size / 2;
+
+		char outfile_name[] = "lenna_output_";
+		char outfile_ext[] = ".pgm";
+
+		char n_string[32];
+		sprintf(n_string, "n%d", n);
+
+		char* outfile = new char[strlen(outfile_name) + strlen(n_string) + strlen(outfile_ext) + 1];
+		strcpy(outfile, outfile_name);
+
+		strcat(outfile, n_string);
+		strcat(outfile, outfile_ext);
+
+		int** input_downsampled;
+		input_downsampled = new int* [y_size];
+		for (int i = 0; i < y_size; i++)
+			input_downsampled[i] = new int[x_size];
+		downsample(input, x_size, y_size, input_downsampled, x_size_orig, y_size_orig);
+
+		WriteImage(outfile, input_downsampled, x_size, y_size, Q);
+
 		
+		// Process each intermediate level	
 		for (int s = 1; s <= S; s++)
 		{
-			// Process each intermediate level		
 			float new_sigma = pow(k, s) * sigma;
 			int mask_size = 5.0 * new_sigma;
 
@@ -167,24 +202,15 @@ int main()
 			for (int i = 0; i < mask_size; i++)
 				Gaussian_Kernel_2D[i] = new float[mask_size];
 			generate_gaussian_kernel_2D(Gaussian_Kernel_2D, sigma, mask_size);
-			/*
-			for (int i = 0; i < mask_size; i++) {
-				for (int j = 0; j < mask_size; j++) {
-					cout << Gaussian_Kernel_2D[i][j] << " ";
-				}
-				cout << endl;
-			}
-			cout << endl;
-			*/
 
-
+			
 			// Pad image with zeros
 			int** input_padded_2D;
 			input_padded_2D = new int* [y_size + mask_size - 1];
 			for (int i = 0; i < y_size + mask_size - 1; i++)
 				input_padded_2D[i] = new int[x_size + mask_size - 1];
-			padd_with_zeros_2D(input, input_padded_2D, x_size, y_size, mask_size);
-
+			padd_with_zeros_2D(input_downsampled, input_padded_2D, x_size, y_size, mask_size);
+			
 
 			// Apply Gaussian smoothing to image
 			int** input_smoothed_2D;
