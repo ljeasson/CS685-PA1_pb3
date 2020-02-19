@@ -1,6 +1,6 @@
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc.hpp>
+//#include <opencv2/core/core.hpp>
+//#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/imgproc.hpp>
 
 #include <iostream>
 #include <cmath>
@@ -11,7 +11,7 @@
 
 #define pi 3.141592653589793
 
-using namespace cv;
+//using namespace cv;
 using namespace std;
 
 void generate_gaussian_kernel_2D(float** kernel, double sigma, int kernel_size);
@@ -99,24 +99,29 @@ void apply_gaussian_smoothing_2D(int** image, int x_size, int y_size, float** ke
 		}
 	}
 }
-void downsample(int** image, int x_size, int y_size, int** downsampled_image)
+void downsample(int** image, int x_size, int y_size, int** downsampled_image, int downsampling_level)
 {
+	int d = pow(2, downsampling_level);
+
 	for (int i = 0; i < y_size; i++)
 	{
 		for (int j = 0; j < x_size; j++)
 		{
-			downsampled_image[i][j] = image[2*i][2*j];
+			downsampled_image[i][j] = image[d*i][d*j];
 		}
 	}
 }
 
 
-int main()
+int main(int argc, char** argv)
 {
 	// Set sigma, number of levels, and number of intermediate levels
-	float sigma = 1.0;
-	float N = 3.0;
-	float S = 3.0;
+	float sigma, N, S;
+	
+	sigma = float(atoi(argv[1]));
+	N = float(atoi(argv[2]));
+	S = float(atoi(argv[3]));
+
 	cout << "Sigma: " << sigma << endl;
 	cout << "Number of Levels: " << N << endl;
 	cout << "Number of Intermediate Levels: " << S << endl << endl;
@@ -134,8 +139,6 @@ int main()
 
 	// Process original image (considered level (n) 0)
 	cout << "n: 0 ==========================================================" << endl;
-
-	// Process each intermediate level	
 	for (int s = 1; s <= S; s++)
 	{
 		float new_sigma = pow(k, s) * sigma;
@@ -144,7 +147,7 @@ int main()
 		if (mask_size % 2 == 0)
 			mask_size -= 1;
 
-		//cout << "new_sigma: " << new_sigma << endl << "mask_size: " << mask_size << endl << endl;
+		cout << "new_sigma: " << new_sigma << endl << "mask_size: " << mask_size << endl;
 
 
 		// Set output file name
@@ -197,13 +200,14 @@ int main()
 
 
 	// Process each level
+	int downsampling_level = 1;
 	for (int n = 1; n <= N; n++)
 	{
 		cout << "n: " << n << " ==========================================================" <<  endl;
 		
 		// Downsample image based on current level
-		x_size = x_size / 2;
-		y_size = y_size / 2;
+		x_size /= 2;
+		y_size /= 2;
 		//cout << "x_size: " << x_size << endl << "y_size: " << y_size << endl;
 
 		char outfile_name[] = "lenna_output_";
@@ -222,7 +226,7 @@ int main()
 		input_downsampled = new int* [y_size];
 		for (int i = 0; i < y_size; i++)
 			input_downsampled[i] = new int[x_size];
-		downsample(input, x_size, y_size, input_downsampled);
+		downsample(input, x_size, y_size, input_downsampled, downsampling_level);
 
 		WriteImage(outfile, input_downsampled, x_size, y_size, Q);
 
@@ -236,7 +240,7 @@ int main()
 			if (mask_size % 2 == 0)
 				mask_size -= 1;
 
-			//cout << "new_sigma: " << new_sigma << endl << "mask_size: " << mask_size << endl << endl;
+			cout << "new_sigma: " << new_sigma << endl << "mask_size: " << mask_size << endl;
 
 
 			// Set output file name
@@ -291,7 +295,9 @@ int main()
 		}
 		cout << endl;
 		
+		downsampling_level += 1;
 	}
+	
 
 	return 0;
 }
